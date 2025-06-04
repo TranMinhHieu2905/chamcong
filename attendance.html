@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Chấm Công Thành Công</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 40px;
+      background: #f0fff0;
+    }
+    h1 {
+      color: green;
+    }
+    #info {
+      font-size: 20px;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <h1>✅ Chấm Công Thành Công!</h1>
+  <div id="info"></div>
+
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const id = urlParams.get("id");
+    const time = new Date().toLocaleString("vi-VN");
+
+    if (id) {
+      document.getElementById("info").innerText = `Nhân viên: ${id}\nThời gian: ${time}`;
+    } else {
+      document.getElementById("info").innerText = "Không tìm thấy mã nhân viên!";
+    }
+  </script>
+</body>
+</html>
