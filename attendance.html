@@ -21,7 +21,7 @@
       document.getElementById('message').innerText = "Không tìm thấy ID nhân viên!";
     } else {
       // Gọi API chấm công
-      fetch('https://192.168.1.3:5000/api/chamcong', {
+      fetch('http://192.168.1.3:5000/api/chamcong', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId: userId })
