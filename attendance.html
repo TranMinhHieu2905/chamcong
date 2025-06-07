@@ -49,7 +49,6 @@
       font-size: 80px;
       margin-bottom: 20px;
       display: none;
-      animation: pop 0.4s ease forwards;
     }
 
     #message {
@@ -72,11 +71,6 @@
 
     .error {
       color: #dc3545;
-    }
-
-    @keyframes pop {
-      0% { transform: scale(0.6); opacity: 0; }
-      100% { transform: scale(1); opacity: 1; }
     }
   </style>
 </head>
@@ -102,59 +96,60 @@
     const timeEl = document.getElementById('timestamp');
     const loadingEl = document.getElementById('loading');
 
-    // Hàm định dạng ngày giờ theo chuẩn vi-VN có 2 chữ số cho ngày/tháng
-    function formatDateTime(dateStr) {
-      const date = dateStr ? new Date(dateStr) : new Date();
-      if (isNaN(date)) return '';
-      const optionsDate = { day: '2-digit', month: '2-digit', year: 'numeric' };
-      const optionsTime = { hour: '2-digit', minute: '2-digit', second: '2-digit' };
-      return {
-        date: date.toLocaleDateString('vi-VN', optionsDate),
-        time: date.toLocaleTimeString('vi-VN', optionsTime)
-      };
-    }
-
-    // Hiển thị kết quả
-    function showResult(icon, message, isSuccess, dateTimeObj = null) {
-      loadingEl.style.display = "none";
-
-      iconEl.textContent = icon;
-      iconEl.style.display = "block";
-      iconEl.className = isSuccess ? 'success' : 'error';
-
-      msgEl.textContent = message;
-      msgEl.className = isSuccess ? 'success' : 'error';
-      msgEl.style.display = "block";
-
-      if (dateTimeObj) {
-        timeEl.textContent = `Bạn đã chấm công thành công vào ngày ${dateTimeObj.date} lúc ${dateTimeObj.time}.`;
-        timeEl.style.display = "block";
-      } else {
-        timeEl.style.display = "none";
-      }
+    function getFormattedDateTime() {
+      const now = new Date();
+      const date = now.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
+      const time = now.toLocaleTimeString('vi-VN');
+      return { date, time };
     }
 
     if (!userId) {
-      showResult("❌", "Không tìm thấy ID nhân viên!", false);
+      loadingEl.style.display = 'none';
+
+      iconEl.textContent = '❌';
+      iconEl.style.display = 'block';
+
+      msgEl.textContent = 'Không tìm thấy ID nhân viên!';
+      msgEl.className = 'error';
+      msgEl.style.display = 'block';
+
+      timeEl.style.display = 'none';
+
     } else {
       fetch('https://3690-2405-4802-1bbb-22c0-54fb-41a0-c8a6-c483.ngrok-free.app/api/nhanvien/chamcong', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId })
+        body: JSON.stringify({ userId: userId })
       })
       .then(res => {
         if (!res.ok) throw new Error(`Lỗi API: ${res.status}`);
         return res.json();
       })
       .then(data => {
-        // Giả sử API trả về trường "timestamp" (ISO string) trong data, ví dụ: data.timestamp
-        // Nếu API ko có trường đó thì sẽ lấy thời gian hiện tại client
-        const timestampFromAPI = data.timestamp || null;
-        const dateTimeObj = formatDateTime(timestampFromAPI);
-        showResult("✅", data.message || "Chấm công thành công!", true, dateTimeObj);
+        loadingEl.style.display = 'none';
+
+        iconEl.textContent = '✅';
+        iconEl.style.display = 'block';
+
+        msgEl.textContent = data.message || 'Chấm công thành công!';
+        msgEl.className = 'success';
+        msgEl.style.display = 'block';
+
+        const dateTime = getFormattedDateTime();
+        timeEl.textContent = `Bạn đã chấm công thành công vào ngày ${dateTime.date} lúc ${dateTime.time}.`;
+        timeEl.style.display = 'block';
       })
       .catch(err => {
-        showResult("❌", "Lỗi khi gọi API chấm công: " + err.message, false);
+        loadingEl.style.display = 'none';
+
+        iconEl.textContent = '❌';
+        iconEl.style.display = 'block';
+
+        msgEl.textContent = 'Lỗi khi gọi API chấm công: ' + err.message;
+        msgEl.className = 'error';
+        msgEl.style.display = 'block';
+
+        timeEl.style.display = 'none';
       });
     }
   </script>
