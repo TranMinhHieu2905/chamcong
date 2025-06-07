@@ -6,29 +6,36 @@
   <style>
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      text-align: center;
-      padding: 40px;
-      background: linear-gradient(to bottom, #f0f4f8, #d9e2ec);
+      background: #eef2f7;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
     }
 
-    h1 {
-      color: #007bff;
-      font-size: 28px;
-      margin-bottom: 20px;
+    .card {
+      background: white;
+      max-width: 480px;
+      width: 100%;
+      border-radius: 15px;
+      box-shadow: 0 12px 25px rgba(0, 0, 0, 0.1);
+      padding: 40px 30px;
+      text-align: center;
     }
 
     #loading {
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 16px;
+      gap: 20px;
     }
 
     .spinner {
-      width: 50px;
-      height: 50px;
-      border: 5px solid #ccc;
-      border-top: 5px solid #007bff;
+      width: 60px;
+      height: 60px;
+      border: 6px solid #ddd;
+      border-top: 6px solid #007bff;
       border-radius: 50%;
       animation: spin 1s linear infinite;
     }
@@ -39,21 +46,21 @@
     }
 
     #icon {
-      font-size: 70px;
-      margin-top: 20px;
-      animation: pop 0.3s ease-out;
+      font-size: 80px;
+      margin-bottom: 20px;
       display: none;
+      animation: pop 0.4s ease forwards;
     }
 
     #message {
-      font-size: 22px;
-      font-weight: 600;
-      margin-top: 15px;
+      font-size: 24px;
+      font-weight: 700;
+      color: #333;
+      margin-bottom: 12px;
       display: none;
     }
 
     #timestamp {
-      margin-top: 10px;
       font-size: 18px;
       color: #555;
       display: none;
@@ -68,17 +75,8 @@
     }
 
     @keyframes pop {
-      0% { transform: scale(0.8); opacity: 0; }
+      0% { transform: scale(0.6); opacity: 0; }
       100% { transform: scale(1); opacity: 1; }
-    }
-
-    .card {
-      background: #fff;
-      border-radius: 12px;
-      padding: 30px;
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-      max-width: 500px;
-      margin: auto;
     }
   </style>
 </head>
@@ -104,26 +102,35 @@
     const timeEl = document.getElementById('timestamp');
     const loadingEl = document.getElementById('loading');
 
-    function getFormattedDateTime() {
-      const now = new Date();
-      const date = now.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
-      const time = now.toLocaleTimeString('vi-VN');
-      return { date, time };
+    // Hàm định dạng ngày giờ theo chuẩn vi-VN có 2 chữ số cho ngày/tháng
+    function formatDateTime(dateStr) {
+      const date = dateStr ? new Date(dateStr) : new Date();
+      if (isNaN(date)) return '';
+      const optionsDate = { day: '2-digit', month: '2-digit', year: 'numeric' };
+      const optionsTime = { hour: '2-digit', minute: '2-digit', second: '2-digit' };
+      return {
+        date: date.toLocaleDateString('vi-VN', optionsDate),
+        time: date.toLocaleTimeString('vi-VN', optionsTime)
+      };
     }
 
-    function showResult(icon, message, isSuccess, dateTimeStr = "") {
+    // Hiển thị kết quả
+    function showResult(icon, message, isSuccess, dateTimeObj = null) {
       loadingEl.style.display = "none";
 
-      iconEl.innerHTML = icon;
+      iconEl.textContent = icon;
       iconEl.style.display = "block";
+      iconEl.className = isSuccess ? 'success' : 'error';
 
-      msgEl.innerText = message;
-      msgEl.classList.add(isSuccess ? "success" : "error");
+      msgEl.textContent = message;
+      msgEl.className = isSuccess ? 'success' : 'error';
       msgEl.style.display = "block";
 
-      if (dateTimeStr) {
-        timeEl.innerText = `Bạn đã chấm công thành công vào ngày ${dateTimeStr.date} lúc ${dateTimeStr.time}.`;
+      if (dateTimeObj) {
+        timeEl.textContent = `Bạn đã chấm công thành công vào ngày ${dateTimeObj.date} lúc ${dateTimeObj.time}.`;
         timeEl.style.display = "block";
+      } else {
+        timeEl.style.display = "none";
       }
     }
 
@@ -133,15 +140,18 @@
       fetch('https://3690-2405-4802-1bbb-22c0-54fb-41a0-c8a6-c483.ngrok-free.app/api/nhanvien/chamcong', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: userId })
+        body: JSON.stringify({ userId })
       })
       .then(res => {
         if (!res.ok) throw new Error(`Lỗi API: ${res.status}`);
         return res.json();
       })
       .then(data => {
-        const dateTime = getFormattedDateTime();
-        showResult("✅", data.message || "Chấm công thành công!", true, dateTime);
+        // Giả sử API trả về trường "timestamp" (ISO string) trong data, ví dụ: data.timestamp
+        // Nếu API ko có trường đó thì sẽ lấy thời gian hiện tại client
+        const timestampFromAPI = data.timestamp || null;
+        const dateTimeObj = formatDateTime(timestampFromAPI);
+        showResult("✅", data.message || "Chấm công thành công!", true, dateTimeObj);
       })
       .catch(err => {
         showResult("❌", "Lỗi khi gọi API chấm công: " + err.message, false);
