@@ -42,12 +42,21 @@
       font-size: 70px;
       margin-top: 20px;
       animation: pop 0.3s ease-out;
+      display: none;
     }
 
     #message {
       font-size: 22px;
       font-weight: 600;
       margin-top: 15px;
+      display: none;
+    }
+
+    #timestamp {
+      margin-top: 10px;
+      font-size: 18px;
+      color: #555;
+      display: none;
     }
 
     .success {
@@ -56,12 +65,6 @@
 
     .error {
       color: #dc3545;
-    }
-
-    #timestamp {
-      margin-top: 10px;
-      font-size: 18px;
-      color: #555;
     }
 
     @keyframes pop {
@@ -87,9 +90,9 @@
       <div class="spinner"></div>
     </div>
 
-    <div id="icon" style="display: none;"></div>
-    <div id="message" style="display: none;"></div>
-    <div id="timestamp" style="display: none;"></div>
+    <div id="icon"></div>
+    <div id="message"></div>
+    <div id="timestamp"></div>
   </div>
 
   <script>
@@ -103,19 +106,19 @@
 
     function getFormattedDateTime() {
       const now = new Date();
-      const options = { day: '2-digit', month: '2-digit', year: 'numeric' };
-      const date = now.toLocaleDateString('vi-VN', options);
+      const date = now.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
       const time = now.toLocaleTimeString('vi-VN');
       return { date, time };
     }
 
     function showResult(icon, message, isSuccess, dateTimeStr = "") {
       loadingEl.style.display = "none";
+
       iconEl.innerHTML = icon;
+      iconEl.style.display = "block";
+
       msgEl.innerText = message;
       msgEl.classList.add(isSuccess ? "success" : "error");
-
-      iconEl.style.display = "block";
       msgEl.style.display = "block";
 
       if (dateTimeStr) {
