@@ -5,10 +5,10 @@
   <title>Chấm công</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       text-align: center;
       padding: 40px;
-      background-color: #f8f9fa;
+      background: linear-gradient(to bottom, #f0f4f8, #d9e2ec);
     }
 
     h1 {
@@ -25,9 +25,9 @@
     }
 
     .spinner {
-      width: 40px;
-      height: 40px;
-      border: 5px solid #e0e0e0;
+      width: 50px;
+      height: 50px;
+      border: 5px solid #ccc;
       border-top: 5px solid #007bff;
       border-radius: 50%;
       animation: spin 1s linear infinite;
@@ -39,40 +39,58 @@
     }
 
     #icon {
-      font-size: 60px;
-      margin-top: 30px;
+      font-size: 70px;
+      margin-top: 20px;
       animation: pop 0.3s ease-out;
     }
 
     #message {
-      font-size: 24px;
+      font-size: 22px;
+      font-weight: 600;
       margin-top: 15px;
-      font-weight: bold;
     }
 
     .success {
-      color: green;
+      color: #28a745;
     }
 
     .error {
-      color: red;
+      color: #dc3545;
+    }
+
+    #timestamp {
+      margin-top: 10px;
+      font-size: 18px;
+      color: #555;
     }
 
     @keyframes pop {
       0% { transform: scale(0.8); opacity: 0; }
       100% { transform: scale(1); opacity: 1; }
     }
+
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 30px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+      max-width: 500px;
+      margin: auto;
+    }
   </style>
 </head>
 <body>
 
-  <div id="loading">
-    <h1>Đang xử lý chấm công...</h1>
-    <div class="spinner"></div>
-  </div>
+  <div class="card">
+    <div id="loading">
+      <h1>Đang xử lý chấm công...</h1>
+      <div class="spinner"></div>
+    </div>
 
-  <div id="icon" style="display: none;"></div>
-  <div id="message" style="display: none;"></div>
+    <div id="icon" style="display: none;"></div>
+    <div id="message" style="display: none;"></div>
+    <div id="timestamp" style="display: none;"></div>
+  </div>
 
   <script>
     const params = new URLSearchParams(window.location.search);
@@ -80,15 +98,30 @@
 
     const iconEl = document.getElementById('icon');
     const msgEl = document.getElementById('message');
+    const timeEl = document.getElementById('timestamp');
     const loadingEl = document.getElementById('loading');
 
-    function showResult(icon, message, isSuccess) {
+    function getFormattedDateTime() {
+      const now = new Date();
+      const options = { day: '2-digit', month: '2-digit', year: 'numeric' };
+      const date = now.toLocaleDateString('vi-VN', options);
+      const time = now.toLocaleTimeString('vi-VN');
+      return { date, time };
+    }
+
+    function showResult(icon, message, isSuccess, dateTimeStr = "") {
       loadingEl.style.display = "none";
       iconEl.innerHTML = icon;
       msgEl.innerText = message;
       msgEl.classList.add(isSuccess ? "success" : "error");
+
       iconEl.style.display = "block";
       msgEl.style.display = "block";
+
+      if (dateTimeStr) {
+        timeEl.innerText = `Bạn đã chấm công thành công vào ngày ${dateTimeStr.date} lúc ${dateTimeStr.time}.`;
+        timeEl.style.display = "block";
+      }
     }
 
     if (!userId) {
@@ -104,12 +137,14 @@
         return res.json();
       })
       .then(data => {
-        showResult("✅", data.message || "Chấm công thành công!", true);
+        const dateTime = getFormattedDateTime();
+        showResult("✅", data.message || "Chấm công thành công!", true, dateTime);
       })
       .catch(err => {
         showResult("❌", "Lỗi khi gọi API chấm công: " + err.message, false);
       });
     }
   </script>
+
 </body>
 </html>
